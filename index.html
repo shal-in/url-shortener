@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles.css">
+    <title>url shortener and file upload</title>
+</head>
+<body>
+    <div id="main-container">
+        <h1 id="title">url shortener and file upload</h1>
+        <h2 id="subtitle">made by <span><t id="link-btn">shalin</t></span></h2>
+
+        <div id="checkbox-container">
+            <h2 class="checkbox-title" id="checkbox-title-url">url</h2>
+            <input class="checkbox" id="checkbox-url" type="checkbox" checked>
+    
+            <h2 class="checkbox-title" id="checkbox-title-file">file</h2>
+            <input class="checkbox" id="checkbox-file" type="checkbox">
+        </div>
+
+        <div id="upload-container">
+            <div id="upload-container-url">
+                <input id="url-input" type="text" placeholder="url">
+                <div id="test-url">url is not tested by the server. you can 
+                    <span><button id="test-url-btn">test it here</button>.</span>
+                </div>
+            </div>
+            <div id="upload-container-file">
+                <input type="file" id="file-input">
+            </div>
+        </div>
+
+        <div id="shortener-container">
+            <input id="shortener-input" type="text" placeholder="shortener">
+            <div id="shortener-text-1">must be 4-20 characters long; can contain characters 
+                a-z (lowercase only), 0-9, and -.
+            </div>
+            <div id="shortener-text-1">the <span id="shortener-input-type">shortened url</span> 
+                will be on <span><button id="shortened-url-example">byshalin.com/example</button></span>.</div>
+        </div>
+
+        <div id="password-container">
+            <input type="password" id="password-input" placeholder="password">
+
+            <div id="show-password">
+                <input type="checkbox" id="show-password-checkbox">
+                <t id="show-password-text">show password</t>
+            </div>
+        </div>
+
+        <div id="submit-container">
+            <button id="submit-btn">submit</button>
+        </div>
+    </div>
+
+    <script src="/index.js"></script>
+</body>
+</html>

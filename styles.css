@@ -1,0 +1,174 @@
+*{
+    margin: 0;
+    padding: 0;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 16px;
+}
+
+body{
+    display: flex;
+    justify-content: center;
+}
+
+/* General styling */
+#main-container{
+    /* border: 1px solid black; */
+    margin-top: 12%;
+    max-width: 375px;
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* Title */
+#title{
+    text-align: center;
+    font-size: 1.75rem;
+    font-style: normal;
+    cursor: default;
+}
+
+#subtitle{
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 100;
+    cursor: default;
+    margin-bottom: 2rem;
+}
+
+#link-btn{
+    text-decoration: underline;
+    font-size: 1.5rem;
+    color: blue;
+}
+
+#link-btn:hover{
+    color: #0866C4;
+    cursor: pointer;
+}
+
+
+/* Checkbox container */
+#checkbox-container{
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.checkbox-title{
+    font-weight: 100;
+    margin-right: 5px;
+    margin-left: auto;
+}
+
+.checkbox{
+    margin-right: auto;
+}
+
+
+/* Upload container */
+#upload-container{
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+#upload-container-url{
+    display: inline;
+}
+
+#upload-container-file{
+    display: none;
+}
+
+#url-input{
+    width: 365px;
+    margin-bottom: 0.25rem;
+}
+
+#test-url{
+    margin-left: 3px;
+    margin-right: 3px;
+}
+
+#test-url-btn{
+    background-color: white;
+    border: none;
+    text-decoration: underline;
+    color: blue;
+}
+
+#test-url-btn:hover{
+    color: #0866C4;
+    cursor: pointer;
+}
+
+
+/* Shortener container */
+#shortener-container{
+    margin-bottom: 2rem;
+    display: inline;
+    justify-content: center;
+}
+
+#shortener-input{
+    width: 365px;
+    margin-bottom: 0.25rem;
+    margin-left: 3px;
+    margin-right: 3px;
+}
+
+#shortener-text-1{
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-bottom: 0.5rem;
+}
+
+#shortener-text-2{
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+#shortened-url-example{
+    background-color: white;
+    border: none;
+    text-decoration: underline;
+    color: blue;
+}
+
+#shortened-url-example:hover{
+    color: #0866C4;
+    cursor: pointer;
+}
+
+/* Password container */
+#password-container{
+    display: flex;
+    margin-bottom: 2rem;
+}
+
+#password-input{
+    width: 230px;
+    margin-right: 1rem;
+    margin-bottom: 0.25rem;
+    margin-left: 3px;
+}
+
+#show-password-checkbox{
+    margin-top: 4px;
+}
+
+#show-password-text{
+    margin-right: 3px;
+}
+
+
+/* Submit container */
+#submit-container{
+    display: flex;
+}
+
+#submit-btn{
+    margin-right: 3px;
+    margin-left: auto;
+}
