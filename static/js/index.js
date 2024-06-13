@@ -122,6 +122,22 @@ function submitBtnFunction() {
         "password": password
     }
 
-    console.log(form);
+    sendPOSTRequest(form);
 }
 
+function sendPOSTRequest(form) {
+    fetch("/submit-form", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(form)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("success", data);
+    })
+    .catch((error) => {
+        console.error("Error", error);
+    })
+}

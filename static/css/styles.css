@@ -25,14 +25,12 @@ body{
     text-align: center;
     font-size: 1.75rem;
     font-style: normal;
-    cursor: default;
 }
 
 #subtitle{
     text-align: center;
     font-size: 1.5rem;
     font-weight: 100;
-    cursor: default;
     margin-bottom: 2rem;
 }
 
