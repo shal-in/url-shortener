@@ -75,7 +75,50 @@ function prepareUploadContainer(checkboxState) {
 
 // Shortener container
 const shortenerInputEl = document.getElementById("shortener-input");
+const randomShortenerBtnEl = document.getElementById("generate-shortener-btn");
+const shortenerUrlExampleBtnEl = document.getElementById("shortened-url-example-btn");
+const shortenedUrlExampleEl = document.getElementById("shortened-url-example");
 
+randomShortenerBtnEl.addEventListener("click", () => {
+    shortenerInputEl.value = generateRandomString();
+})
+
+shortenerUrlExampleBtnEl.addEventListener("click", () => {
+    alert(`this is just an example link. please press submit first.`);
+})
+
+function generateRandomString(length = 12) {
+    const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let randomString = '';
+    for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        randomString += characters[randomIndex];
+    }
+    return randomString;
+}
+
+function isValidString(string) {
+    const regex = /^[a-z0-9-]+$/;
+
+    if (!regex.test(string)) {
+        shortenerInputEl.value = string.slice(0, -1);
+        return [false, "Shortener can only contain characters a-z, 0-9 and -"];
+    }
+
+    if (string.length < 4 || string.length > 20) {
+        return [false, "Shortener must be 4-20 characters long"];
+    }
+
+    if (string.startsWith('-') || string.endsWith('-')) {
+        return [false, "Shortener cannot start or end with - character"];
+    }
+
+    if (string.includes("--")) {
+        return [false, "Shortener cannot contain consecutive - characters"];
+    }
+
+    return [true, ""];
+}
 
 // Password container
 const passwordInputEl = document.getElementById("password-input");
@@ -112,7 +155,28 @@ function submitBtnFunction() {
         input = urlInputEl.value;
     }
     else if (checkboxState === "file") {
-        input = "file to be added"
+        input = "file to be added";
+    }
+
+    if (!input) {
+        alert("please insert a url or select a file");
+        return
+    }
+
+    if(!shortener) {
+        alert("please insert a shortener");
+        return
+    }
+
+    let [valid, error] = isValidString(shortener);
+    if (!valid) {
+        alert(error);
+        return
+    }
+
+    if (!password) {
+        alert("please insert a password");
+        return
     }
 
     form = {
@@ -123,6 +187,12 @@ function submitBtnFunction() {
     }
 
     sendPOSTRequest(form);
+
+    setTimeout(() => {
+        urlInputEl.value = "";
+        shortenerInputEl.value = "";
+        passwordInputEl.value = "";
+    }, 800);
 }
 
 function sendPOSTRequest(form) {
@@ -135,9 +205,21 @@ function sendPOSTRequest(form) {
     })
     .then(response => response.json())
     .then(data => {
-        console.log("success", data);
+        alert(data.message);
+        return
     })
     .catch((error) => {
         console.error("Error", error);
+    })
+}
+
+// Footer container
+const footerBtnEls = Array.from(document.getElementsByClassName("footer-btn"));
+
+for (let footerBtnEl of footerBtnEls) {
+    let link = footerBtnEl.getAttribute("link");
+
+    footerBtnEl.addEventListener("click", () => {
+        window.open(link, "_blank");
     })
 }

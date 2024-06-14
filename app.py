@@ -20,7 +20,6 @@ def index():
 @app.route("/api/submit-form", methods=["POST"])
 def submit_form():
     form = request.get_json()
-    print(form)
     
     # Verify and handle the form
     success, message = helper.handle_form(db, form)
