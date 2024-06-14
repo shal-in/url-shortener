@@ -32,12 +32,19 @@ def submit_form():
     
     return jsonify(response)
 
-@app.route("api/get-url", methods=["GET"])
-def get_url()
+@app.route("/api/get-url", methods=["GET"])
+def get_url():
     shortener = request.args.get("shortener")
 
     if not shortener:
-        return jsoni
+        return jsonify({"error": "No shortener provided"}), 400
+    
+    url = helper.get_url_for_shortener(db, shortener)
+
+    if url:
+        return jsonify({"url": url})
+    else:
+        return jsonify({"error": f"No URL found for shortener '{shortener}'"}), 404
     
 
 if __name__ == '__main__':

@@ -23,7 +23,6 @@ def add_to_collection(data, collection_ref):
     collection_ref.document(key).set(data)
 
 
-
 def upload_file_to_db(data, db):
     pass
 
@@ -32,9 +31,9 @@ def shortener_taken(shortener, collection):
     doc = doc_ref.get()
 
     if doc.exists:
-        return True
+        return doc
     
-    return False
+    return None
 
     
 
@@ -87,4 +86,15 @@ def handle_form(db, form):
         return False, "Unable to add files yet"
 
     return False, "Invalid form type"
+
 # Read from database (API)
+def get_url_for_shortener(db, shortener):
+    active_collection_ref = get_collection_ref(db, "active")
+    doc = shortener_taken(shortener, active_collection_ref)
+
+    if doc:
+        data = doc.to_dict()
+        if data["type"] == "url":
+            return data["url"]
+        
+    return None
