@@ -1,38 +1,90 @@
+# General helper
+from datetime import datetime
+
+def get_current_time():
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+# Firebase stuff
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import firestore
+
+def get_db_ref(cred_path):
+    cred = credentials.Certificate(cred_path)
+    firebase_admin.initialize_app(cred)
+
+    return firestore.client()
+
+def get_collection_ref(db, collection):
+    return db.collection(collection)
+
+def add_to_collection(data, collection_ref):
+    key = data['shortener']
+    collection_ref.document(key).set(data)
+
+
+
+def upload_file_to_db(data, db):
+    pass
+
+def shortener_taken(shortener, collection):
+    doc_ref = collection.document(shortener)
+    doc = doc_ref.get()
+
+    if doc.exists:
+        return True
+    
+    return False
+
+    
+
+
+# Write to database
 with open("password.txt", "r") as file:
     CORRECT_PASSWORD = file.read()
 
 def check_password(password):
     return password == CORRECT_PASSWORD
 
-def shortener_taken(shortener):
-    pass
+# form = {
+#     "type": checkboxState,
+#     "input": input,
+#     "shortener": shortener,
+#     "password": password
+# }
 
-def upload_url_to_db(database, shortener, url):
-    pass
+def verify_form(form, collection):
+    if not check_password(form["password"]):
+        # Check password
+        return False, "Incorrect password"
 
-def upload_file_to_db(database, shortener, file):
-    pass
-
-def verify_form(form):
-    if not check_password(form.password):
-        # incorrect password
-        pass
-
-    if shortener_taken(form.shortener):
+    if shortener_taken(form["shortener"], collection):
         # shortener taken
-        pass
+        return False, "Shortener is already taken"
 
-    return True
+    return True, ""
 
-def handle_form(form):
-    if not verify_form(form):
-        # a problem, handle and return problem
-        pass
+def handle_form(db, form):
+    active_collection_ref = get_collection_ref(db, "active")
 
-    if form.type == "url":
-        # upload url, return success/failure
-        pass
+    valid, error_message = verify_form(form, active_collection_ref)
+    if not valid:
+        return False, error_message
 
-    elif form.type == "file":
+    if form["type"] == "url":
+        data = {
+            "shortener": form["shortener"],
+            "type": "url",
+            "url": form["input"],
+            "time added": get_current_time()
+        }
+
+        add_to_collection(data, active_collection_ref)
+        return True, "URL added successfully"
+
+    elif form["type"] == "file":
         # upload file, return success.failure
-        pass
+        return False, "Unable to add files yet"
+
+    return False, "Invalid form type"
+# Read from database (API)

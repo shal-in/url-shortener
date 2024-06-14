@@ -126,7 +126,7 @@ function submitBtnFunction() {
 }
 
 function sendPOSTRequest(form) {
-    fetch("/submit-form", {
+    fetch("/api/submit-form", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
