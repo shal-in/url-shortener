@@ -19,6 +19,18 @@ body{
     flex-direction: column;
 }
 
+.btn{
+    background-color: white;
+    border: none;
+    text-decoration: underline;
+    color: blue;
+}
+
+.btn:hover{
+    color: #0866C4;
+    cursor: pointer;
+}
+
 
 /* Title */
 #title{
@@ -29,20 +41,18 @@ body{
 
 #subtitle{
     text-align: center;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 100;
     margin-bottom: 2rem;
 }
 
-#link-btn{
-    text-decoration: underline;
-    font-size: 1.5rem;
-    color: blue;
+#subtitle-decoration{
+    font-style: italic;
+    font-size: 1.25rem;
 }
 
-#link-btn:hover{
-    color: #0866C4;
-    cursor: pointer;
+#link-btn{
+    font-size: 1.5rem;
 }
 
 
@@ -89,18 +99,6 @@ body{
     margin-right: 3px;
 }
 
-#test-url-btn{
-    background-color: white;
-    border: none;
-    text-decoration: underline;
-    color: blue;
-}
-
-#test-url-btn:hover{
-    color: #0866C4;
-    cursor: pointer;
-}
-
 
 /* Shortener container */
 #shortener-container{
@@ -125,18 +123,6 @@ body{
 #shortener-text-2{
     margin-left: 5px;
     margin-right: 5px;
-}
-
-#shortened-url-example{
-    background-color: white;
-    border: none;
-    text-decoration: underline;
-    color: blue;
-}
-
-#shortened-url-example:hover{
-    color: #0866C4;
-    cursor: pointer;
 }
 
 /* Password container */
@@ -164,9 +150,29 @@ body{
 /* Submit container */
 #submit-container{
     display: flex;
+    margin-bottom: 1rem;
 }
 
 #submit-btn{
     margin-right: 3px;
     margin-left: auto;
+}
+
+
+/* Footer container */
+.footer-text{
+    margin-bottom: 1rem;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+#footer-text-1{
+    display: none;
+}
+
+#footer-text-2{
+    margin-bottom: 0.25rem;
+}
+
+#footer-text-3{
+    margin-bottom: 1.5rem;
 }

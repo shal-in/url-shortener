@@ -9,7 +9,7 @@
 <body>
     <div id="main-container">
         <h1 id="title">url shortener and file upload</h1>
-        <h2 id="subtitle">made by <span><t id="link-btn">shalin</t></span></h2>
+        <h2 id="subtitle">made by <span><t class="btn footer-btn" id="link-btn" link="https://www.linkedin.com/in/shalin-ahasan-5569b91b1/">shalin</t></span> (me), to make my life <span id="subtitle-decoration">easier</span>.</h2>
 
         <div id="checkbox-container">
             <h2 class="checkbox-title" id="checkbox-title-url">url</h2>
@@ -23,21 +23,23 @@
             <div id="upload-container-url">
                 <input id="url-input" type="text" placeholder="url">
                 <div id="test-url">url is not tested by the server. you can 
-                    <span><button id="test-url-btn">test it here</button>.</span>
+                    <span><button id="test-url-btn" class="btn">test it here</button>.</span>
                 </div>
             </div>
             <div id="upload-container-file">
                 <input type="file" id="file-input">
+
+                <button id="file-test-btn">file test</button>
             </div>
         </div>
 
         <div id="shortener-container">
             <input id="shortener-input" type="text" placeholder="shortener">
-            <div id="shortener-text-1">must be 4-20 characters long; can contain characters 
-                a-z (lowercase only), 0-9, and -.
+            <div id="shortener-text-1">must be 4-30 characters long; can contain characters 
+                a-z (lowercase only), 0-9, and -. <span><button class="btn" id="generate-shortener-btn">generate random shortener</button></span>
             </div>
             <div id="shortener-text-1">the <span id="shortener-input-type">shortened url</span> 
-                will be on <span><button id="shortened-url-example">byshalin.com/example</button></span>.</div>
+                will be on <span><button class="btn" id="shortened-url-example-btn">byshalin.com/<span id="shortened-url-example">example</span></button></span>.</div>
         </div>
 
         <div id="password-container">
@@ -51,6 +53,26 @@
 
         <div id="submit-container">
             <button id="submit-btn">submit</button>
+        </div>
+
+        <div id="footer-container">
+            <div id="footer-text-1" class="footer-text"> you can see an example of the 
+                tool being operational <span><button id="footer-example-btn" class="btn">here</button>.</span>
+            </div>
+
+            <div id="footer-text-2" class="footer-text">made by Shalin (me).</div>
+            
+            <div id="footer-text-3" class="footer-text"><span><button class="footer-btn btn" link="https://www.linkedin.com/in/shalin-ahasan-5569b91b1/">linkedin</button>
+            </span>  &nbsp;&nbsp;  <span><button class="footer-btn btn" link="https://github.com/shal-in/">github</button></span>
+            <!-- </span>  &nbsp;&nbsp;  <span><button class="footer-btn btn" link="email">email</button></span> -->
+        </div>
+        
+            <div id="footer-text-4" class="footer-text">backend is built using <button class="btn footer-btn" link="https://flask.palletsprojects.com/en/3.0.x/">Flask</button>; 
+                frontend is built using <button class="btn footer-btn" link="https://en.wikipedia.org/wiki/JavaScript">JavaScript (ES6)</button> and 
+                <button class="btn footer-btn" link="https://en.wikipedia.org/wiki/CSS">CSS</button>; data and files are stored on <button class="btn footer-btn" link="https://firebase.google.com/">Firestore</button> 
+                and <button class="btn footer-btn" link="https://cloud.google.com/storage?hl=en">Cloud Storage</button>;
+                deployed on <button class="btn footer-btn" link="https://cloud.google.com/run?hl=en">Cloud Run</button>; all text is set to <button class="btn footer-btn" link="https://en.wikipedia.org/wiki/Times_New_Roman">
+                    Times New Roman</button> typeface.</div>
         </div>
     </div>
 

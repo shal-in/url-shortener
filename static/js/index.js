@@ -72,10 +72,56 @@ function prepareUploadContainer(checkboxState) {
     }
 }
 
+// File input
+const fileInputEl = document.getElementById("file-input");
+
 
 // Shortener container
 const shortenerInputEl = document.getElementById("shortener-input");
+const randomShortenerBtnEl = document.getElementById("generate-shortener-btn");
+const shortenerUrlExampleBtnEl = document.getElementById("shortened-url-example-btn");
+const shortenedUrlExampleEl = document.getElementById("shortened-url-example");
 
+randomShortenerBtnEl.addEventListener("click", () => {
+    shortenerInputEl.value = generateRandomString();
+})
+
+shortenerUrlExampleBtnEl.addEventListener("click", () => {
+    alert(`this is just an example link. please press submit first.`);
+})
+
+function generateRandomString(length = 12) {
+    const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let randomString = '';
+    for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        randomString += characters[randomIndex];
+    }
+    return randomString;
+}
+
+function isValidString(string) {
+    const regex = /^[a-z0-9-]+$/;
+
+    if (!regex.test(string)) {
+        shortenerInputEl.value = string.slice(0, -1);
+        return [false, "Shortener can only contain characters a-z, 0-9 and -"];
+    }
+
+    if (string.length < 4 || string.length > 30) {
+        return [false, "Shortener must be 4-30 characters long"];
+    }
+
+    if (string.startsWith('-') || string.endsWith('-')) {
+        return [false, "Shortener cannot start or end with - character"];
+    }
+
+    if (string.includes("--")) {
+        return [false, "Shortener cannot contain consecutive - characters"];
+    }
+
+    return [true, ""];
+}
 
 // Password container
 const passwordInputEl = document.getElementById("password-input");
@@ -107,26 +153,75 @@ function submitBtnFunction() {
     let input;
     let shortener = shortenerInputEl.value;
     let password = passwordInputEl.value;
+    let formData;
 
     if (checkboxState === "url") {
         input = urlInputEl.value;
+
+        if (!input.startsWith('https://') && !input.startsWith('http://')) {
+            input = 'https://' + input;
+        }
     }
     else if (checkboxState === "file") {
-        input = "file to be added"
+        const file = fileInputEl.files[0];
+
+        if (!file) {
+            alert("No file selected");
+            return;
+        }
+
+        formData = new FormData();
+        formData.append('file', file);
+
+        input = file;
     }
 
-    form = {
-        "type": checkboxState,
-        "input": input,
-        "shortener": shortener,
-        "password": password
+    if (!input) {
+        alert("please insert a url or select a file");
+        return
     }
 
-    sendPOSTRequest(form);
+    if(!shortener) {
+        alert("please insert a shortener");
+        return
+    }
+
+    let [valid, error] = isValidString(shortener);
+    if (!valid) {
+        alert(error);
+        return
+    }
+
+    if (!password) {
+        alert("please insert a password");
+        return
+    }
+
+    if (checkboxState === "url") {
+        form = {
+            "url": input,
+            "shortener": shortener, 
+            "password": password
+        }
+
+        sendUrlPOSTRequest(form)
+    }
+
+    else if(checkboxState === "file") {
+        form = {
+            "type": checkboxState,
+            "shortener": shortener,
+            "password": password
+        }
+
+        formData.append("jsonData", JSON.stringify(form));
+
+        sendFilePOSTRequest(formData)
+    }
 }
 
-function sendPOSTRequest(form) {
-    fetch("/submit-form", {
+function sendUrlPOSTRequest(form) {
+    fetch("/api/submit-url", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -135,9 +230,56 @@ function sendPOSTRequest(form) {
     })
     .then(response => response.json())
     .then(data => {
-        console.log("success", data);
+        success = (data.status === "success");
+        alert(data.message);
+
+        if (success) {
+            setTimeout(() => {
+                urlInputEl.value = "";
+                shortenerInputEl.value = "";
+                passwordInputEl.value = "";
+                fileInputEl.value = "";
+            }, 800);
+        }
+        return
     })
     .catch((error) => {
         console.error("Error", error);
+    })
+}
+
+function sendFilePOSTRequest(form) {
+    fetch("/api/submit-file", {
+        method: "POST",
+        body: form
+    })
+    .then(response => response.json())
+    .then(data => {
+        success = (data.status === "success");
+        alert(data.message);
+
+        if (success) {
+            setTimeout(() => {
+                urlInputEl.value = "";
+                shortenerInputEl.value = "";
+                passwordInputEl.value = "";
+                fileInputEl.value = "";
+            }, 800);
+        }
+        return
+    })
+    .catch((error) => {
+        console.error("Error", error);
+    })
+}
+
+// Footer container
+const footerBtnEls = Array.from(document.getElementsByClassName("footer-btn"));
+
+for (let footerBtnEl of footerBtnEls) {
+    let link = footerBtnEl.getAttribute("link");
+
+    footerBtnEl.addEventListener("click", () => {
+        window.open(link, "_blank");
     })
 }
