@@ -50,7 +50,7 @@ def submit_file_form():
         return jsonify({"error": "No JSON data provided"}), 40
     
     success, message = helper.handle_file_form(db, bucket, form, file)
-    
+
     if success:
         response = {'status': 'success', 'message': message}
     else:
@@ -65,30 +65,12 @@ def get_url():
     if not shortener:
         return jsonify({"error": "No shortener provided"}), 400
     
-    url = helper.get_url_for_shortener(db, shortener)
+    response = helper.get_url_for_shortener(db, bucket, shortener)
 
-    if url:
-        return jsonify({"url": url})
+    if response:
+        return jsonify(response)
     else:
         return jsonify({"error": f"No URL found for shortener '{shortener}'"}), 404
-
-@app.route('/upload', methods=['POST'])
-def upload_file():
-    # Check if the post request has the file part
-    if 'file' not in request.files:
-        return "No file part in the request", 400
-
-    file = request.files['file']
-
-    # If user does not select file, browser also
-    # submit an empty part without filename
-    if file.filename == '':
-        return "No selected file", 400
-
-    # Save the file to the upload folder
-    file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
-
-    return "File uploaded successfully", 200
 
 if __name__ == '__main__':
     app.run(port=7000, debug=True)
