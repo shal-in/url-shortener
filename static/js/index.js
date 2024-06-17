@@ -72,6 +72,9 @@ function prepareUploadContainer(checkboxState) {
     }
 }
 
+// File input
+const fileInputEl = document.getElementById("file-input");
+
 
 // Shortener container
 const shortenerInputEl = document.getElementById("shortener-input");
@@ -105,8 +108,8 @@ function isValidString(string) {
         return [false, "Shortener can only contain characters a-z, 0-9 and -"];
     }
 
-    if (string.length < 4 || string.length > 20) {
-        return [false, "Shortener must be 4-20 characters long"];
+    if (string.length < 4 || string.length > 30) {
+        return [false, "Shortener must be 4-30 characters long"];
     }
 
     if (string.startsWith('-') || string.endsWith('-')) {
@@ -150,12 +153,27 @@ function submitBtnFunction() {
     let input;
     let shortener = shortenerInputEl.value;
     let password = passwordInputEl.value;
+    let formData;
 
     if (checkboxState === "url") {
         input = urlInputEl.value;
+
+        if (!input.startsWith('https://') && !input.startsWith('http://')) {
+            input = 'https://' + input;
+        }
     }
     else if (checkboxState === "file") {
-        input = "file to be added";
+        const file = fileInputEl.files[0];
+
+        if (!file) {
+            alert("No file selected");
+            return;
+        }
+
+        formData = new FormData();
+        formData.append('file', file);
+
+        input = file;
     }
 
     if (!input) {
@@ -179,24 +197,31 @@ function submitBtnFunction() {
         return
     }
 
-    form = {
-        "type": checkboxState,
-        "input": input,
-        "shortener": shortener,
-        "password": password
+    if (checkboxState === "url") {
+        form = {
+            "url": input,
+            "shortener": shortener, 
+            "password": password
+        }
+
+        sendUrlPOSTRequest(form)
     }
 
-    sendPOSTRequest(form);
+    else if(checkboxState === "file") {
+        form = {
+            "type": checkboxState,
+            "shortener": shortener,
+            "password": password
+        }
 
-    setTimeout(() => {
-        urlInputEl.value = "";
-        shortenerInputEl.value = "";
-        passwordInputEl.value = "";
-    }, 800);
+        formData.append("jsonData", JSON.stringify(form));
+
+        sendFilePOSTRequest(formData)
+    }
 }
 
-function sendPOSTRequest(form) {
-    fetch("/api/submit-form", {
+function sendUrlPOSTRequest(form) {
+    fetch("/api/submit-url", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -205,7 +230,42 @@ function sendPOSTRequest(form) {
     })
     .then(response => response.json())
     .then(data => {
+        success = (data.status === "success");
         alert(data.message);
+
+        if (success) {
+            setTimeout(() => {
+                urlInputEl.value = "";
+                shortenerInputEl.value = "";
+                passwordInputEl.value = "";
+                fileInputEl.value = "";
+            }, 800);
+        }
+        return
+    })
+    .catch((error) => {
+        console.error("Error", error);
+    })
+}
+
+function sendFilePOSTRequest(form) {
+    fetch("/api/submit-file", {
+        method: "POST",
+        body: form
+    })
+    .then(response => response.json())
+    .then(data => {
+        success = (data.status === "success");
+        alert(data.message);
+
+        if (success) {
+            setTimeout(() => {
+                urlInputEl.value = "";
+                shortenerInputEl.value = "";
+                passwordInputEl.value = "";
+                fileInputEl.value = "";
+            }, 800);
+        }
         return
     })
     .catch((error) => {

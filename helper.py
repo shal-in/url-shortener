@@ -1,14 +1,17 @@
 # General helper
 from datetime import datetime
+import os
+import json
+import mimetypes
+from google.cloud import storage
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import firestore
 
 def get_current_time():
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 # Firebase stuff
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import firestore
-
 def get_db_ref(cred_path):
     cred = credentials.Certificate(cred_path)
     firebase_admin.initialize_app(cred)
@@ -21,6 +24,8 @@ def get_collection_ref(db, collection):
 def add_to_collection(data, collection_ref):
     key = data['shortener']
     collection_ref.document(key).set(data)
+
+    return True
 
 
 def upload_file_to_db(data, db):
@@ -35,8 +40,33 @@ def shortener_taken(shortener, collection):
     
     return None
 
-    
 
+
+# Cloud storage stuff
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "cred_key.json"
+
+storage_client = storage.Client()
+
+def get_bucket(bucket_name):
+    return storage_client.get_bucket(bucket_name)
+
+
+def upload_to_bucket(blob_name, file_content, bucket_name, content_type=None):
+    try:
+        bucket = storage_client.get_bucket(bucket_name)
+        blob = bucket.blob(blob_name)
+        
+        # If content type is not provided, guess it based on the file extension
+        if content_type is None:
+            content_type, _ = mimetypes.guess_type(blob_name)
+
+        # Set content type when uploading the file content
+        blob.upload_from_string(file_content, content_type=content_type)
+
+        return True
+    except Exception as e:
+        print(f"Error uploading to bucket: {e}")
+        return False
 
 # Write to database
 with open("password.txt", "r") as file:
@@ -63,29 +93,50 @@ def verify_form(form, collection):
 
     return True, ""
 
-def handle_form(db, form):
+def handle_url_form(db, form):
     active_collection_ref = get_collection_ref(db, "active")
 
     valid, error_message = verify_form(form, active_collection_ref)
     if not valid:
         return False, error_message
 
-    if form["type"] == "url":
-        data = {
-            "shortener": form["shortener"],
-            "type": "url",
-            "url": form["input"],
-            "time added": get_current_time()
-        }
+    data = {
+        "shortener": form["shortener"],
+        "type": "url",
+        "url": form["url"],
+        "time added": get_current_time()
+    }
 
-        add_to_collection(data, active_collection_ref)
+    if add_to_collection(data, active_collection_ref):
         return True, "URL added successfully"
 
-    elif form["type"] == "file":
-        # upload file, return success.failure
-        return False, "Unable to add files yet"
-
     return False, "Invalid form type"
+
+def handle_file_form(db, bucket, form, file):
+    active_collection_ref = get_collection_ref(db, "active")
+
+    valid, error_message = verify_form(form, active_collection_ref)
+    if not valid:
+        return False, error_message
+    
+    file_content = file.read()
+    blob_name = file.filename
+
+    data = {"shortener": form["shortener"],
+            "type": "file",
+            "blob_name": blob_name,
+            "time added": get_current_time()}
+    
+    # add file to bucket
+    if upload_to_bucket(blob_name, file_content, bucket):
+        if add_to_collection(data, active_collection_ref):
+            return True, "File uploaded successfully"
+        
+    return False, "Error with file upload"
+
+        
+
+    # then add data to collection
 
 # Read from database (API)
 def get_url_for_shortener(db, shortener):
