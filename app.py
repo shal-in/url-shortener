@@ -6,6 +6,8 @@ import helper
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Necessary for flashing messages
 
+
+
 # Firebase stuff
 db = helper.get_db_ref("cred_key.json")
 
