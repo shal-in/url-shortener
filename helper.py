@@ -97,8 +97,7 @@ def generate_file_content(blob_name, bucket):
         return None
 
 # Write to database
-with open("password.txt", "r") as file:
-    CORRECT_PASSWORD = file.read()
+CORRECT_PASSWORD = os.getenv("EXPECTED_PASSWORD")
 
 def check_password(password):
     return password == CORRECT_PASSWORD
