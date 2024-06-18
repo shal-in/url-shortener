@@ -75,4 +75,4 @@ def get_url():
         return jsonify({"error": f"No URL found for shortener '{shortener}'"}), 404
 
 if __name__ == '__main__':
-    app.run(port=7000, debug=True)
+    app.run(port=8080, debug=True)
