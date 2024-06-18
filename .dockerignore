@@ -1,0 +1,14 @@
+# Ignore files not needed in the Docker image
+.git
+.gitignore
+.dockerignore
+.vscode
+.idea
+__pycache__
+*.pyc
+.DS_Store
+node_modules
+npm-debug.log
+yarn-error.log
+
+README.md
