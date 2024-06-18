@@ -6,10 +6,10 @@ import helper
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Necessary for flashing messages
 
-
+GOOGLE_APPLICATION_CREDENTIALS = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
 
 # Firebase stuff
-db = helper.get_db_ref("cred_key.json")
+db = helper.get_db_ref(GOOGLE_APPLICATION_CREDENTIALS)
 
 # Cloud Storage stuff
 bucket = helper.get_bucket("shalin_test_bucket")
