@@ -41,8 +41,6 @@ def shortener_taken(shortener, collection):
 
 
 # Cloud storage stuff
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "cred_key.json"
-
 storage_client = storage.Client()
 
 def get_bucket(bucket_name):
