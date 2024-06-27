@@ -75,4 +75,5 @@ def get_url():
         return jsonify({"error": f"No URL found for shortener '{shortener}'"}), 404
 
 if __name__ == '__main__':
-    app.run(port=8080, debug=True)
+    port = int(os.environ.get('PORT', 8080))
+    app.run(debug=True, host='0.0.0.0', port=port)
