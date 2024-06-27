@@ -2,18 +2,33 @@ from flask import Flask, render_template, request, redirect, jsonify, send_file,
 import os
 import json
 import helper
+from dotenv import load_dotenv
+
+# Load environment variables from .env file if it exists
+if os.path.exists('.env'):
+    load_dotenv('.env')
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Necessary for flashing messages
 
-GOOGLE_APPLICATION_CREDENTIALS_JSON = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-GOOGLE_APPLICATION_CREDENTIALS = json.loads(GOOGLE_APPLICATION_CREDENTIALS_JSON)
+# Load necessary environment variables
+GOOGLE_APPLICATIONS_CREDENTIALS_JSON = os.getenv("GOOGLE_APPLICATIONS_CREDENTIALS_JSON")
+EXPECTED_PASSWORD = os.getenv("EXPECTED_PASSWORD")
+
+# If environment variables are not found in .env, set them from system environment
+if not (GOOGLE_APPLICATIONS_CREDENTIALS_JSON and EXPECTED_PASSWORD):
+    GOOGLE_APPLICATIONS_CREDENTIALS_JSON = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+    EXPECTED_PASSWORD = os.getenv("EXPECTED_PASSWORD")
+
+# Parse JSON if credentials are provided as a JSON string
+if GOOGLE_APPLICATIONS_CREDENTIALS_JSON:
+    GOOGLE_APPLICATION_CREDENTIALS = json.loads(GOOGLE_APPLICATIONS_CREDENTIALS_JSON)
 
 # Firebase stuff
 db = helper.get_db_ref(GOOGLE_APPLICATION_CREDENTIALS)
 
 # Cloud Storage stuff
-bucket = helper.get_bucket("shalin_test_bucket")
+bucket = helper.get_bucket(GOOGLE_APPLICATION_CREDENTIALS, "shalin_test_bucket")
 
 # Routes and API requests
 @app.route("/")

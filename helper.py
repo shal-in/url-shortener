@@ -41,15 +41,13 @@ def shortener_taken(shortener, collection):
 
 
 # Cloud storage stuff
-storage_client = storage.Client()
-
-def get_bucket(bucket_name):
+def get_bucket(credentials, bucket_name):
+    storage_client = storage.Client(cred=credentials)
     return storage_client.get_bucket(bucket_name)
 
 
-def upload_to_bucket(blob_name, file_content, bucket_name, content_type=None):
+def upload_to_bucket(blob_name, file_content, bucket, content_type=None):
     try:
-        bucket = storage_client.get_bucket(bucket_name)
         blob = bucket.blob(blob_name)
         
         # If content type is not provided, guess it based on the file extension
@@ -95,11 +93,8 @@ def generate_file_content(blob_name, bucket):
         return None
 
 # Write to database
-CORRECT_PASSWORD = os.getenv("EXPECTED_PASSWORD")
-
 def check_password(password):
-    return password == CORRECT_PASSWORD
-
+    return password == os.getenv("EXPECTED_PASSWORD")
 # form = {
 #     "type": checkboxState,
 #     "input": input,
