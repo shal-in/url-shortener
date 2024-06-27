@@ -13,7 +13,7 @@ def get_current_time():
 
 # Firebase stuff
 def get_db_ref(cred_path):
-    cred = credentials.Certificate(cred_path)
+    cred = credentials.Certificate()
     firebase_admin.initialize_app(cred)
 
     return firestore.client()
@@ -43,7 +43,7 @@ def shortener_taken(shortener, collection):
 
 
 # Cloud storage stuff
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "creds.json"
+# os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "creds.json"
 storage_client = storage.Client()
 
 def get_bucket(bucket_name):

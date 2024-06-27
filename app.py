@@ -13,7 +13,7 @@ app.secret_key = 'your_secret_key'  # Necessary for flashing messages
 
 # Load necessary environment variables
 # Firebase stuff
-db = helper.get_db_ref("creds.json")
+db = helper.get_db_ref( )
 
 # Cloud Storage stuff
 bucket = helper.get_bucket("shalin_test_bucket")
