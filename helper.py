@@ -43,7 +43,7 @@ def shortener_taken(shortener, collection):
 
 
 # Cloud storage stuff
-# os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "creds.json"
+# os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "abcd.json"
 storage_client = storage.Client()
 
 def get_bucket(bucket_name):
