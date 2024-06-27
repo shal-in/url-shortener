@@ -2,15 +2,18 @@ from flask import Flask, render_template, request, redirect, jsonify, send_file,
 import os
 import json
 import helper
+from dotenv import load_dotenv
+
+# Load environment variables from .env file if it exists
+if os.path.exists('.env'):
+    load_dotenv('.env')
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Necessary for flashing messages
 
-GOOGLE_APPLICATION_CREDENTIALS_JSON = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-GOOGLE_APPLICATION_CREDENTIALS = json.loads(GOOGLE_APPLICATION_CREDENTIALS_JSON)
-
+# Load necessary environment variables
 # Firebase stuff
-db = helper.get_db_ref(GOOGLE_APPLICATION_CREDENTIALS)
+db = helper.get_db_ref( )
 
 # Cloud Storage stuff
 bucket = helper.get_bucket("shalin_test_bucket")

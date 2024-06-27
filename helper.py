@@ -2,8 +2,6 @@
 from datetime import datetime, timedelta
 import os
 import json
-import io
-import base64
 import mimetypes
 from google.cloud import storage
 import firebase_admin
@@ -15,7 +13,7 @@ def get_current_time():
 
 # Firebase stuff
 def get_db_ref(cred_path):
-    cred = credentials.Certificate(cred_path)
+    cred = credentials.Certificate()
     firebase_admin.initialize_app(cred)
 
     return firestore.client()
@@ -29,6 +27,10 @@ def add_to_collection(data, collection_ref):
 
     return True
 
+
+def upload_file_to_db(data, db):
+    pass
+
 def shortener_taken(shortener, collection):
     doc_ref = collection.document(shortener)
     doc = doc_ref.get()
@@ -41,11 +43,11 @@ def shortener_taken(shortener, collection):
 
 
 # Cloud storage stuff
+# os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "abcd.json"
 storage_client = storage.Client()
 
 def get_bucket(bucket_name):
     return storage_client.get_bucket(bucket_name)
-
 
 def upload_to_bucket(blob_name, file_content, bucket_name, content_type=None):
     try:
@@ -63,42 +65,23 @@ def upload_to_bucket(blob_name, file_content, bucket_name, content_type=None):
     except Exception as e:
         print(f"Error uploading to bucket: {e}")
         return False
-    
-def generate_signed_url(blob_name, bucket):
-    try:
-        blob = bucket.blob(blob_name)
 
-        if blob.exists():
-            signed_url = blob.generate_signed_url(expiration=timedelta(hours=24))
-            return signed_url
-        
-        print(f"Blob {blob_name} does not exist in bucket.")
-        return False
-    except Exception as e:
-        print (e)
-        return False
-    
-def generate_file_content(blob_name, bucket):
-    try:
-        blob = bucket.blob(blob_name)
-        
-        # Download the file content as bytes
-        file_content = blob.download_as_bytes()
+def generate_signed_url(blob_name, bucket, duration=24):
+    expiration_time = timedelta(hours=duration)
+    blob = bucket.blob(blob_name)
+    url = blob.generate_signed_url(
+    version="v4",
+    # This URL is valid for 15 minutes
+    expiration=datetime.utcnow() + expiration_time,
+    # Allow GET requests using this URL.
+    method="GET",
+    )
 
-        # Encode the file content using Base64
-        encoded_file_content = base64.b64encode(file_content).decode('utf-8')
-
-        return encoded_file_content
-    
-    except Exception as e:
-        print(f"Error downloading file: {e}")
-        return None
+    return url
 
 # Write to database
-CORRECT_PASSWORD = os.getenv("EXPECTED_PASSWORD")
-
 def check_password(password):
-    return password == CORRECT_PASSWORD
+    return password == "example1"
 
 # form = {
 #     "type": checkboxState,
@@ -146,28 +129,22 @@ def handle_file_form(db, bucket, form, file):
     
     file_content = file.read()
     blob_name = file.filename
-    # Get the file size
-    file_size = len(file_content)
-
-    max_size = 50 * 1024 * 1024  # Example: 50 MB limit
-    if file_size > max_size:
-        signed_url = True
-    else:
-        signed_url = False
-
-    signed_url = False # remove this line after testing
 
     data = {"shortener": form["shortener"],
             "type": "file",
-            "signed url": signed_url,
-            "blob name": blob_name,
+            "blob_name": blob_name,
             "time added": get_current_time()}
     
+    # add file to bucket
     if upload_to_bucket(blob_name, file_content, bucket):
         if add_to_collection(data, active_collection_ref):
             return True, "File uploaded successfully"
         
     return False, "Error with file upload"
+
+        
+
+    # then add data to collection
 
 # Read from database (API)
 def get_url_for_shortener(db, bucket, shortener):
@@ -177,12 +154,8 @@ def get_url_for_shortener(db, bucket, shortener):
     if doc:
         data = doc.to_dict()
         if data["type"] == "url":
-            return {"url": data["url"]}
-        if data["type"] == "file":
-            if data["signed url"]:
-                return {"url": generate_signed_url(data["blob name"], bucket)}
-            if not data["signed url"]:
-                return {"file name": data["blob name"],
-                        "file content": generate_file_content(data["blob name"], bucket)}
-
+            return data["url"]
+        else:
+            blob_name = data["blob name"]
+            return generate_signed_url(blob_name, bucket, 24)
     return None
