@@ -6,7 +6,8 @@ import helper
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Necessary for flashing messages
 
-GOOGLE_APPLICATION_CREDENTIALS = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+GOOGLE_APPLICATION_CREDENTIALS_JSON = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+GOOGLE_APPLICATION_CREDENTIALS = json.loads(GOOGLE_APPLICATION_CREDENTIALS_JSON)
 
 # Firebase stuff
 db = helper.get_db_ref(GOOGLE_APPLICATION_CREDENTIALS)
@@ -75,4 +76,5 @@ def get_url():
         return jsonify({"error": f"No URL found for shortener '{shortener}'"}), 404
 
 if __name__ == '__main__':
-    app.run(port=8080, debug=True)
+    port = int(os.environ.get('PORT', 8080))
+    app.run(debug=True, host='0.0.0.0', port=port)
