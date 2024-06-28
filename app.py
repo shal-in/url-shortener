@@ -21,7 +21,7 @@ cred = credentials.ApplicationDefault()
 
 # Initialize Google Cloud Storage
 storage_client = storage.Client()
-bucket = storage_client.get_bucket("shalin_test_bucket")
+bucket = storage_client.get_bucket("url-file-uploads")
 
 # Initialize Firebase Admin SDK for Firestore
 firebase_admin.initialize_app(cred)
