@@ -60,7 +60,7 @@ def generate_signed_url(blob_name, bucket, duration=24):
 
 # Write to database
 def check_password(password):
-    return password == os.environ.get["PASSWORD"]
+    return password == "234781856"
 
 # form = {
 #     "type": checkboxState,
