@@ -1,23 +1,11 @@
 # General helper
 from datetime import datetime, timedelta
-import os
-import json
 import mimetypes
-from google.cloud import storage
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import firestore
 
 def get_current_time():
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 # Firebase stuff
-def get_db_ref(cred_path):
-    cred = credentials.Certificate()
-    firebase_admin.initialize_app(cred)
-
-    return firestore.client()
-
 def get_collection_ref(db, collection):
     return db.collection(collection)
 
@@ -26,7 +14,6 @@ def add_to_collection(data, collection_ref):
     collection_ref.document(key).set(data)
 
     return True
-
 
 def upload_file_to_db(data, db):
     pass
@@ -40,18 +27,9 @@ def shortener_taken(shortener, collection):
     
     return None
 
-
-
 # Cloud storage stuff
-# os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "abcd.json"
-storage_client = storage.Client()
-
-def get_bucket(bucket_name):
-    return storage_client.get_bucket(bucket_name)
-
-def upload_to_bucket(blob_name, file_content, bucket_name, content_type=None):
+def upload_to_bucket(blob_name, file_content, bucket, content_type=None):
     try:
-        bucket = storage_client.get_bucket(bucket_name)
         blob = bucket.blob(blob_name)
         
         # If content type is not provided, guess it based on the file extension
@@ -142,9 +120,6 @@ def handle_file_form(db, bucket, form, file):
         
     return False, "Error with file upload"
 
-        
-
-    # then add data to collection
 
 # Read from database (API)
 def get_url_for_shortener(db, bucket, shortener):
