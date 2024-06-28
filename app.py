@@ -26,7 +26,7 @@ storage_client = storage.Client(credentials=credentials, project=project_id)
 bucket = storage_client.get_bucket("url-file-uploads")
 
 # Initialize Firebase Admin SDK for Firestore
-firebase_admin.initialize_app(credentials=credentials)
+firebase_admin.initialize_app()
 db = firestore.client()
 
 # Routes and API requests
