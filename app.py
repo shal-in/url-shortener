@@ -7,7 +7,7 @@ from google.cloud import storage
 import helper
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Necessary for flashing messages
+app.secret_key = 'your_secret_key'   # Necessary for flashing messages
 
 
 # # LOCAL DEVELOPMENT ONLY (comment out for deployment)
@@ -21,7 +21,7 @@ cred = credentials.ApplicationDefault()
 
 # Initialize Google Cloud Storage
 storage_client = storage.Client()
-bucket = storage_client.get_bucket("shalin_test_bucket")
+bucket = storage_client.get_bucket("url-file-uploads")
 
 # Initialize Firebase Admin SDK for Firestore
 firebase_admin.initialize_app(cred)
