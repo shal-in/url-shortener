@@ -1,22 +1,32 @@
 from flask import Flask, render_template, request, redirect, jsonify, send_file, abort
 import os
 import json
+import firebase_admin
+from firebase_admin import credentials, firestore
+from google.cloud import storage
 import helper
-from dotenv import load_dotenv
-
-# Load environment variables from .env file if it exists
-if os.path.exists('.env'):
-    load_dotenv('.env')
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Necessary for flashing messages
 
-# Load necessary environment variables
-# Firebase stuff
-db = helper.get_db_ref( )
 
-# Cloud Storage stuff
-bucket = helper.get_bucket("shalin_test_bucket")
+# LOCAL DEVELOPMENT ONLY (comment out for deployment)
+cred_path = "url-shortener-426321-0a521fcab6e0.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = cred_path
+cred = credentials.Certificate(cred_path)
+
+# DEPLOYMENT ONLY (comment out for local development)
+cred = credentials.ApplicationDefault()
+
+
+# Initialize Google Cloud Storage
+storage_client = storage.Client()
+bucket = storage_client.get_bucket("shalin_test_bucket")
+
+# Initialize Firebase Admin SDK for Firestore
+firebase_admin.initialize_app(cred)
+db = firestore.client()
+
 
 # Routes and API requests
 @app.route("/")
@@ -26,8 +36,6 @@ def index():
 @app.route("/api/submit-url", methods=["POST"])
 def submit_url_form():
     form = request.get_json()
-    
-    print (form)
     
     # Verify and handle the form
     success, message = helper.handle_url_form(db, form)
