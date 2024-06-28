@@ -7,7 +7,7 @@ from google.cloud import storage
 import helper
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Necessary for flashing messages
+app.secret_key = 'your_secret_key'   # Necessary for flashing messages
 
 
 # # LOCAL DEVELOPMENT ONLY (comment out for deployment)
