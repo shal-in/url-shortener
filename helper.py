@@ -16,9 +16,6 @@ def add_to_collection(data, collection_ref):
 
     return True
 
-def upload_file_to_db(data, db):
-    pass
-
 def shortener_taken(shortener, collection):
     doc_ref = collection.document(shortener)
     doc = doc_ref.get()

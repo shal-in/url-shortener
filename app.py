@@ -5,28 +5,29 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from google.cloud import storage
 import helper
+import google.auth
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'   # Necessary for flashing messages
-
 
 # # LOCAL DEVELOPMENT ONLY (comment out for deployment)
 # cred_path = "url-shortener-426321-0a521fcab6e0.json"
 # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = cred_path
 # cred = credentials.Certificate(cred_path)
 
-# DEPLOYMENT ONLY (comment out for local development)
-cred = credentials.ApplicationDefault()
+# # DEPLOYMENT ONLY (comment out for local development)
+# cred = credentials.ApplicationDefault()
 
+# Obtain the application default credentials and project ID
+credentials, project_id = google.auth.default()
 
 # Initialize Google Cloud Storage
-storage_client = storage.Client()
+storage_client = storage.Client(credentials=credentials, project=project_id)
 bucket = storage_client.get_bucket("url-file-uploads")
 
 # Initialize Firebase Admin SDK for Firestore
-firebase_admin.initialize_app(cred)
+firebase_admin.initialize_app(credentials=credentials)
 db = firestore.client()
-
 
 # Routes and API requests
 @app.route("/")
