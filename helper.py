@@ -132,6 +132,6 @@ def get_url_for_shortener(db, bucket, shortener):
         if data["type"] == "url":
             return data["url"]
         else:
-            blob_name = data["blob name"]
+            blob_name = data["blob_name"]
             return generate_signed_url(blob_name, bucket, 24)
     return None

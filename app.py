@@ -10,13 +10,13 @@ app = Flask(__name__)
 app.secret_key = 'your_secret_key'   # Necessary for flashing messages
 
 
-# # LOCAL DEVELOPMENT ONLY (comment out for deployment)
-# cred_path = "url-shortener-426321-0a521fcab6e0.json"
-# os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = cred_path
-# cred = credentials.Certificate(cred_path)
+# LOCAL DEVELOPMENT ONLY (comment out for deployment)
+cred_path = "url-shortener-426321-0a521fcab6e0.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = cred_path
+cred = credentials.Certificate(cred_path)
 
-# DEPLOYMENT ONLY (comment out for local development)
-cred = credentials.ApplicationDefault()
+# # DEPLOYMENT ONLY (comment out for local development)
+# cred = credentials.ApplicationDefault()
 
 
 # Initialize Google Cloud Storage
