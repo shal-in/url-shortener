@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, jsonify, send_file, abort
+from flask import Flask, render_template, request, jsonify, make_response, redirect
 import os
 import json
 import firebase_admin
@@ -14,9 +14,6 @@ app.secret_key = 'your_secret_key'   # Necessary for flashing messages
 # cred_path = "url-shortener-426321-0a521fcab6e0.json"
 # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = cred_path
 # cred = credentials.Certificate(cred_path)
-
-# # DEPLOYMENT ONLY (comment out for local development)
-# cred = credentials.ApplicationDefault()
 
 # Obtain the application default credentials and project ID
 credentials, project_id = google.auth.default()
@@ -73,17 +70,23 @@ def submit_file_form():
     
     return jsonify(response)
 
-@app.route("/api/get-url", methods=["GET"])
-def get_url():
-    shortener = request.args.get("shortener")
+# Define all other routes above
+@app.route("/<shortener>", methods=["GET"])
+def get_url(shortener):
 
     if not shortener:
         return jsonify({"error": "No shortener provided"}), 400
     
-    response = helper.get_url_for_shortener(db, shortener)
+    content, content_type = helper.get_url_for_shortener(db, bucket, shortener)
 
-    if response:
-        return jsonify(response)
+    if content:
+        if content_type == "":
+            return redirect(content)
+        else:
+            response = make_response(content)
+            response.headers['Content-Type'] = content_type
+            return response
+
     else:
         return jsonify({"error": f"No URL found for shortener '{shortener}'"}), 404
 

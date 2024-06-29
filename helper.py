@@ -6,13 +6,6 @@ from google.cloud import storage
 import google.auth
 from firebase_admin import credentials
 
-# # LOCAL DEVELOPMENT ONLY (comment out for deployment)
-# cred_path = "url-shortener-426321-0a521fcab6e0.json"
-# os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = cred_path
-# cred = credentials.Certificate(cred_path)
-
-credentials, project_id = google.auth.default()
-
 def get_current_time():
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -57,6 +50,18 @@ def upload_to_bucket(blob_name, file_content, bucket, content_type=None):
     except Exception as e:
         print(f"Error uploading to bucket: {e}")
         return False
+    
+def download_from_bucket(blob_name, bucket):
+    # Get the blob
+    blob = bucket.blob(blob_name)
+
+    # Download the blob's content as a string
+    content = blob.download_as_string()
+
+    # Determine the content type
+    content_type = blob.content_type or 'application/octet-stream'
+
+    return content, content_type
 
 def generate_signed_url(credentials, project_id, blob_name, duration=24):
     expiration_time = timedelta(hours=duration)
@@ -139,15 +144,16 @@ def handle_file_form(db, bucket, form, file):
 
 
 # Read from database (API)
-def get_url_for_shortener(db, shortener):
+def get_url_for_shortener(db, bucket, shortener):
     active_collection_ref = get_collection_ref(db, "active")
     doc = shortener_taken(shortener, active_collection_ref)
 
     if doc:
         data = doc.to_dict()
         if data["type"] == "url":
-            return data["url"]
+            return data["url"], ""
         else:
             blob_name = data["blob_name"]
-            return generate_signed_url(credentials, project_id, blob_name, 24)
-    return None
+            content, content_type = download_from_bucket(blob_name, bucket)
+            return content, content_type
+    return False, ""
