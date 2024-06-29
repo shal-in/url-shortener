@@ -2,6 +2,16 @@
 from datetime import datetime, timedelta
 import os
 import mimetypes
+from google.cloud import storage
+import google.auth
+from firebase_admin import credentials
+
+# # LOCAL DEVELOPMENT ONLY (comment out for deployment)
+# cred_path = "url-shortener-426321-0a521fcab6e0.json"
+# os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = cred_path
+# cred = credentials.Certificate(cred_path)
+
+credentials, project_id = google.auth.default()
 
 def get_current_time():
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -26,6 +36,12 @@ def shortener_taken(shortener, collection):
     return None
 
 # Cloud storage stuff
+def get_bucket(credentials, project_id, bucket_name):
+    storage_client = storage.Client(credentials=credentials, project=project_id)
+    bucket = storage_client.get_bucket(bucket_name)
+
+    return bucket
+
 def upload_to_bucket(blob_name, file_content, bucket, content_type=None):
     try:
         blob = bucket.blob(blob_name)
@@ -42,8 +58,11 @@ def upload_to_bucket(blob_name, file_content, bucket, content_type=None):
         print(f"Error uploading to bucket: {e}")
         return False
 
-def generate_signed_url(blob_name, bucket, duration=24):
+def generate_signed_url(credentials, project_id, blob_name, duration=24):
     expiration_time = timedelta(hours=duration)
+
+    bucket = get_bucket(credentials, project_id, "url-file-uploads")
+    
     blob = bucket.blob(blob_name)
     url = blob.generate_signed_url(
     version="v4",
@@ -120,7 +139,7 @@ def handle_file_form(db, bucket, form, file):
 
 
 # Read from database (API)
-def get_url_for_shortener(db, bucket, shortener):
+def get_url_for_shortener(db, shortener):
     active_collection_ref = get_collection_ref(db, "active")
     doc = shortener_taken(shortener, active_collection_ref)
 
@@ -130,5 +149,5 @@ def get_url_for_shortener(db, bucket, shortener):
             return data["url"]
         else:
             blob_name = data["blob_name"]
-            return generate_signed_url(blob_name, bucket, 24)
+            return generate_signed_url(credentials, project_id, blob_name, 24)
     return None

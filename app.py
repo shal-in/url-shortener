@@ -80,7 +80,7 @@ def get_url():
     if not shortener:
         return jsonify({"error": "No shortener provided"}), 400
     
-    response = helper.get_url_for_shortener(db, bucket, shortener)
+    response = helper.get_url_for_shortener(db, shortener)
 
     if response:
         return jsonify(response)
