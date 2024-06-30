@@ -3,8 +3,7 @@ from datetime import datetime, timedelta
 import os
 import mimetypes
 from google.cloud import storage
-import google.auth
-from firebase_admin import credentials
+import base64
 
 def get_current_time():
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -51,7 +50,7 @@ def upload_to_bucket(blob_name, file_content, bucket, content_type=None):
         print(f"Error uploading to bucket: {e}")
         return False
     
-def download_from_bucket(blob_name, bucket):
+def download_from_bucket1(blob_name, bucket):
     # Get the blob
     blob = bucket.blob(blob_name)
 
@@ -63,21 +62,21 @@ def download_from_bucket(blob_name, bucket):
 
     return content, content_type
 
-def generate_signed_url(credentials, project_id, blob_name, duration=24):
-    expiration_time = timedelta(hours=duration)
-
-    bucket = get_bucket(credentials, project_id, "url-file-uploads")
-    
+def download_from_bucket(blob_name, bucket):
     blob = bucket.blob(blob_name)
-    url = blob.generate_signed_url(
-    version="v4",
-    # This URL is valid for 15 minutes
-    expiration=datetime.utcnow() + expiration_time,
-    # Allow GET requests using this URL.
-    method="GET",
-    )
 
-    return url
+    # Download the content as bytes
+    content = blob.download_as_bytes()
+    
+    # Determine the content type
+    content_type = blob.content_type or 'application/octet-stream'
+
+    # Encode content in Base64
+    encoded_content = base64.b64encode(content).decode('utf-8')
+    
+
+    return encoded_content, content_type, blob_name
+
 
 # Write to database
 def check_password(password):
@@ -151,9 +150,9 @@ def get_url_for_shortener(db, bucket, shortener):
     if doc:
         data = doc.to_dict()
         if data["type"] == "url":
-            return data["url"], ""
+            return data["url"], "", ""
         else:
             blob_name = data["blob_name"]
-            content, content_type = download_from_bucket(blob_name, bucket)
-            return content, content_type
-    return False, ""
+            content, content_type, filename = download_from_bucket(blob_name, bucket)
+            return content, content_type, filename
+    return False, "", ""

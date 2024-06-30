@@ -10,12 +10,12 @@ import google.auth
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'   # Necessary for flashing messages
 
-# # LOCAL DEVELOPMENT ONLY (comment out for deployment)
+# FOR LOCAL DEVELOPMENT ONLY 
 cred_path = "url-shortener-426321-0a521fcab6e0.json"
 if os.path.exists(cred_path):
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = cred_path
     cred = credentials.Certificate(cred_path)
-    
+
 # Obtain the application default credentials and project ID
 credentials, project_id = google.auth.default()
 
@@ -72,24 +72,59 @@ def submit_file_form():
     return jsonify(response)
 
 # Define all other routes above
-@app.route("/<shortener>", methods=["GET"])
-def get_url(shortener):
+@app.route("/api/get-shortener", methods=["GET"])
+def get_shortener():
+    shortener = request.args.get("shortener")
 
     if not shortener:
         return jsonify({"error": "No shortener provided"}), 400
     
-    content, content_type = helper.get_url_for_shortener(db, bucket, shortener)
+    content, content_type, file_name = helper.get_url_for_shortener(db, bucket, shortener)
 
     if content:
         if content_type == "":
-            return redirect(content)
+            response_data = {
+                "type": "url",
+                "content": content
+            }
+
+            return jsonify(response_data), 200
         else:
-            response = make_response(content)
-            response.headers['Content-Type'] = content_type
-            return response
+            response_data = {
+                "type": "file",
+                "content": content,
+                "content_type": content_type,
+                "file_name": file_name
+            }
+
+            return jsonify(response_data), 200
 
     else:
         return jsonify({"error": f"No URL found for shortener '{shortener}'"}), 404
+
+
+
+
+
+# # Define all other routes above
+# @app.route("/<shortener>", methods=["GET"])
+# def get_url(shortener):
+
+#     if not shortener:
+#         return jsonify({"error": "No shortener provided"}), 400
+    
+#     content, content_type = helper.get_url_for_shortener(db, bucket, shortener)
+
+#     if content:
+#         if content_type == "":
+#             return redirect(content)
+#         else:
+#             response = make_response(content)
+#             response.headers['Content-Type'] = content_type
+#             return response
+
+#     else:
+#         return jsonify({"error": f"No URL found for shortener '{shortener}'"}), 404
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
