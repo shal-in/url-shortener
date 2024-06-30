@@ -104,28 +104,6 @@ def get_shortener():
 
 
 
-
-
-# # Define all other routes above
-# @app.route("/<shortener>", methods=["GET"])
-# def get_url(shortener):
-
-#     if not shortener:
-#         return jsonify({"error": "No shortener provided"}), 400
-    
-#     content, content_type = helper.get_url_for_shortener(db, bucket, shortener)
-
-#     if content:
-#         if content_type == "":
-#             return redirect(content)
-#         else:
-#             response = make_response(content)
-#             response.headers['Content-Type'] = content_type
-#             return response
-
-#     else:
-#         return jsonify({"error": f"No URL found for shortener '{shortener}'"}), 404
-
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
     app.run(debug=True, host='0.0.0.0', port=port)
