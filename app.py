@@ -6,6 +6,7 @@ from firebase_admin import credentials, firestore
 from google.cloud import storage
 import helper
 import google.auth
+import base64
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'   # Necessary for flashing messages
@@ -32,6 +33,27 @@ db = firestore.client()
 def index():
     return render_template("index.html")
 
+@app.route("/admin")
+def admin():
+    return render_template("admin.html")
+
+@app.route("/<shortener>")
+def shortener(shortener):
+    content, content_type, file_name = helper.get_url_for_shortener(db, bucket, shortener)
+
+    if content:
+        if content_type == "": #url
+            return redirect(content)
+        else: #file
+            decoded_content = base64.b64decode(content)
+
+            file = make_response(decoded_content)
+            file.headers['Content-Type'] = content_type
+            file.headers['Content-Disposition'] = f'inline; filename="{file_name}"; filename*=UTF-8\'\'{file_name}'
+
+            return file
+
+    return jsonify({"error": "Failed to fetch data"}), 404
 @app.route("/api/submit-url", methods=["POST"])
 def submit_url_form():
     form = request.get_json()
@@ -71,7 +93,6 @@ def submit_file_form():
     
     return jsonify(response)
 
-# Define all other routes above
 @app.route("/api/get-shortener", methods=["GET"])
 def get_shortener():
     shortener = request.args.get("shortener")
@@ -102,6 +123,18 @@ def get_shortener():
     else:
         return jsonify({"error": f"No URL found for shortener '{shortener}'"}), 404
 
+@app.route("/api/admin-access-request", methods=["POST"])
+def admin_access_request():
+    password = request.get_json()
+
+    success, shorteners = helper.handle_admin_access_request(db, password)
+
+    if success:
+        response = {'status': 'success', 'shortenerData': shorteners}
+    else:
+        response = {'status': 'error', 'message': shorteners}
+    
+    return jsonify(response)
 
 
 if __name__ == '__main__':

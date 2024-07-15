@@ -142,6 +142,27 @@ def handle_file_form(db, bucket, form, file):
     return False, "Error with file upload"
 
 
+# Admin
+def handle_admin_access_request(db, password):
+    if not check_password(password):
+        return False, "Incorrect password"
+
+    active_collection_ref = get_collection_ref(db, "active")
+    shorteners = get_all_documents(active_collection_ref)
+
+    print (len(shorteners))
+    return True, shorteners
+
+def get_all_documents(collection_ref):    
+    # Get all documents in the collection
+    docs = collection_ref.stream()
+    
+    documents = []
+    for doc in docs:
+        documents.append(doc.to_dict())
+
+    return documents
+
 # Read from database (API)
 def get_url_for_shortener(db, bucket, shortener):
     active_collection_ref = get_collection_ref(db, "active")
