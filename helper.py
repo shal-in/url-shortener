@@ -80,7 +80,12 @@ def download_from_bucket(blob_name, bucket):
 
 # Write to database
 def check_password(password):
-    return password == "234781586"
+    if os.path.exists("password.txt"):
+        with open("password.txt", 'r') as file:
+            EXPECTED_PASSWORD = file.read()
+    else:
+        EXPECTED_PASSWORD = os.getenv("EXPECTED_PASSWORD")
+    return password == EXPECTED_PASSWORD
 
 # form = {
 #     "type": checkboxState,
