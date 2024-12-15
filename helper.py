@@ -1,6 +1,9 @@
 # General helper
 from datetime import datetime, timedelta
+import os
 import mimetypes
+from google.cloud import storage
+import base64
 
 def get_current_time():
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -15,9 +18,6 @@ def add_to_collection(data, collection_ref):
 
     return True
 
-def upload_file_to_db(data, db):
-    pass
-
 def shortener_taken(shortener, collection):
     doc_ref = collection.document(shortener)
     doc = doc_ref.get()
@@ -28,6 +28,12 @@ def shortener_taken(shortener, collection):
     return None
 
 # Cloud storage stuff
+def get_bucket(credentials, project_id, bucket_name):
+    storage_client = storage.Client(credentials=credentials, project=project_id)
+    bucket = storage_client.get_bucket(bucket_name)
+
+    return bucket
+
 def upload_to_bucket(blob_name, file_content, bucket, content_type=None):
     try:
         blob = bucket.blob(blob_name)
@@ -43,23 +49,43 @@ def upload_to_bucket(blob_name, file_content, bucket, content_type=None):
     except Exception as e:
         print(f"Error uploading to bucket: {e}")
         return False
-
-def generate_signed_url(blob_name, bucket, duration=24):
-    expiration_time = timedelta(hours=duration)
+    
+def download_from_bucket1(blob_name, bucket):
+    # Get the blob
     blob = bucket.blob(blob_name)
-    url = blob.generate_signed_url(
-    version="v4",
-    # This URL is valid for 15 minutes
-    expiration=datetime.utcnow() + expiration_time,
-    # Allow GET requests using this URL.
-    method="GET",
-    )
 
-    return url
+    # Download the blob's content as a string
+    content = blob.download_as_string()
+
+    # Determine the content type
+    content_type = blob.content_type or 'application/octet-stream'
+
+    return content, content_type
+
+def download_from_bucket(blob_name, bucket):
+    blob = bucket.blob(blob_name)
+
+    # Download the content as bytes
+    content = blob.download_as_bytes()
+    
+    # Determine the content type
+    content_type = blob.content_type or 'application/octet-stream'
+
+    # Encode content in Base64
+    encoded_content = base64.b64encode(content).decode('utf-8')
+    
+
+    return encoded_content, content_type, blob_name
+
 
 # Write to database
 def check_password(password):
-    return password == "example1"
+    if os.path.exists("password.txt"):
+        with open("password.txt", 'r') as file:
+            EXPECTED_PASSWORD = file.read()
+    else:
+        EXPECTED_PASSWORD = os.getenv("EXPECTED_PASSWORD")
+    return password == EXPECTED_PASSWORD
 
 # form = {
 #     "type": checkboxState,
@@ -121,6 +147,27 @@ def handle_file_form(db, bucket, form, file):
     return False, "Error with file upload"
 
 
+# Admin
+def handle_admin_access_request(db, password):
+    if not check_password(password):
+        return False, "Incorrect password"
+
+    active_collection_ref = get_collection_ref(db, "active")
+    shorteners = get_all_documents(active_collection_ref)
+
+    print (len(shorteners))
+    return True, shorteners
+
+def get_all_documents(collection_ref):    
+    # Get all documents in the collection
+    docs = collection_ref.stream()
+    
+    documents = []
+    for doc in docs:
+        documents.append(doc.to_dict())
+
+    return documents
+
 # Read from database (API)
 def get_url_for_shortener(db, bucket, shortener):
     active_collection_ref = get_collection_ref(db, "active")
@@ -129,8 +176,9 @@ def get_url_for_shortener(db, bucket, shortener):
     if doc:
         data = doc.to_dict()
         if data["type"] == "url":
-            return data["url"]
+            return data["url"], "", ""
         else:
-            blob_name = data["blob name"]
-            return generate_signed_url(blob_name, bucket, 24)
-    return None
+            blob_name = data["blob_name"]
+            content, content_type, filename = download_from_bucket(blob_name, bucket)
+            return content, content_type, filename
+    return False, "", ""

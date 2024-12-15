@@ -1,38 +1,59 @@
-from flask import Flask, render_template, request, redirect, jsonify, send_file, abort
+from flask import Flask, render_template, request, jsonify, make_response, redirect
 import os
 import json
 import firebase_admin
 from firebase_admin import credentials, firestore
 from google.cloud import storage
 import helper
+import google.auth
+import base64
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Necessary for flashing messages
+app.secret_key = 'your_secret_key'   # Necessary for flashing messages
 
+# FOR LOCAL DEVELOPMENT ONLY 
+cred_path = "url-shortener-426321-0a521fcab6e0.json"
+if os.path.exists(cred_path):
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = cred_path
+    cred = credentials.Certificate(cred_path)
 
-# # LOCAL DEVELOPMENT ONLY (comment out for deployment)
-# cred_path = "url-shortener-426321-0a521fcab6e0.json"
-# os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = cred_path
-# cred = credentials.Certificate(cred_path)
-
-# DEPLOYMENT ONLY (comment out for local development)
-cred = credentials.ApplicationDefault()
-
+# Obtain the application default credentials and project ID
+credentials, project_id = google.auth.default()
 
 # Initialize Google Cloud Storage
-storage_client = storage.Client()
-bucket = storage_client.get_bucket("shalin_test_bucket")
+storage_client = storage.Client(credentials=credentials, project=project_id)
+bucket = storage_client.get_bucket("url-file-uploads")
 
 # Initialize Firebase Admin SDK for Firestore
-firebase_admin.initialize_app(cred)
+firebase_admin.initialize_app()
 db = firestore.client()
-
 
 # Routes and API requests
 @app.route("/")
 def index():
     return render_template("index.html")
 
+@app.route("/admin")
+def admin():
+    return render_template("admin.html")
+
+@app.route("/<shortener>")
+def shortener(shortener):
+    content, content_type, file_name = helper.get_url_for_shortener(db, bucket, shortener)
+
+    if content:
+        if content_type == "": #url
+            return redirect(content)
+        else: #file
+            decoded_content = base64.b64decode(content)
+
+            file = make_response(decoded_content)
+            file.headers['Content-Type'] = content_type
+            file.headers['Content-Disposition'] = f'inline; filename="{file_name}"; filename*=UTF-8\'\'{file_name}'
+
+            return file
+
+    return jsonify({"error": "Failed to fetch data"}), 404
 @app.route("/api/submit-url", methods=["POST"])
 def submit_url_form():
     form = request.get_json()
@@ -72,19 +93,49 @@ def submit_file_form():
     
     return jsonify(response)
 
-@app.route("/api/get-url", methods=["GET"])
-def get_url():
+@app.route("/api/get-shortener", methods=["GET"])
+def get_shortener():
     shortener = request.args.get("shortener")
 
     if not shortener:
         return jsonify({"error": "No shortener provided"}), 400
     
-    response = helper.get_url_for_shortener(db, bucket, shortener)
+    content, content_type, file_name = helper.get_url_for_shortener(db, bucket, shortener)
 
-    if response:
-        return jsonify(response)
+    if content:
+        if content_type == "":
+            response_data = {
+                "type": "url",
+                "content": content
+            }
+
+            return jsonify(response_data), 200
+        else:
+            response_data = {
+                "type": "file",
+                "content": content,
+                "content_type": content_type,
+                "file_name": file_name
+            }
+
+            return jsonify(response_data), 200
+
     else:
         return jsonify({"error": f"No URL found for shortener '{shortener}'"}), 404
+
+@app.route("/api/admin-access-request", methods=["POST"])
+def admin_access_request():
+    password = request.get_json()
+
+    success, shorteners = helper.handle_admin_access_request(db, password)
+
+    if success:
+        response = {'status': 'success', 'shortenerData': shorteners}
+    else:
+        response = {'status': 'error', 'message': shorteners}
+    
+    return jsonify(response)
+
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
